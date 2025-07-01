@@ -1,0 +1,30 @@
+.perspective {
+  perspective: 1000px;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.front,
+.back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 0.75rem; /* match Tailwind's rounded-xl */
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
