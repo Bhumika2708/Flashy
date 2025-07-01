@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import Flashcard from './components/Flashcard'
+import CreateFlashcard from './components/CreateFlashcard'
 
-// Deck of cards
+
 const flashcards = [
   { id: 1, question: "What is the capital of France?", answer: "Paris 🇫🇷" },
   { id: 2, question: "What is 5 + 7?", answer: "12 🧮" },
@@ -16,31 +17,41 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [learnedCards , setLearnedCards] = useState([])
 
-  // 🔀 Shuffle the deck
+  
+
   const shuffleFlashcards = () => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5)
     setShuffledDeck(shuffled)
     setCurrentIndex(0)
   }
 
-  // ⬅️➡️ Spacebar Keyboard controls
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key === 'ArrowRight') {
-        setCurrentIndex((prev) => (prev + 1) % shuffledDeck.length)
-      } else if (e.key === 'ArrowLeft') {
-        setCurrentIndex((prev) =>
-          prev === 0 ? shuffledDeck.length - 1 : prev - 1
-        )
-      } else if (e.key === ' ') {
-        e.preventDefault()
-        document.getElementById('flashcard')?.click()
-      }
-    }
 
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [shuffledDeck])
+ useEffect(() => {
+  const handleKey = (e) => {
+    const isTyping =
+      document.activeElement.tagName === 'INPUT' ||
+      document.activeElement.tagName === 'TEXTAREA' ||
+      document.activeElement.isContentEditable
+
+    if (isTyping) return // 🔒 Don't interfere while typing
+
+    if (e.key === 'ArrowRight') {
+      setCurrentIndex((prev) => (prev + 1) % shuffledDeck.length)
+    } else if (e.key === 'ArrowLeft') {
+      setCurrentIndex((prev) =>
+        prev === 0 ? shuffledDeck.length - 1 : prev - 1
+      )
+    } else if (e.key === ' ') {
+      e.preventDefault()
+      document.getElementById('flashcard')?.click()
+    }
+  }
+
+  window.addEventListener('keydown', handleKey)
+  return () => window.removeEventListener('keydown', handleKey)
+}, [shuffledDeck])
+
+    
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-6 bg-gray-100">
@@ -50,8 +61,27 @@ function App() {
   question={shuffledDeck[currentIndex].question}
   answer={shuffledDeck[currentIndex].answer}
   isLearned={learnedCards.includes(shuffledDeck[currentIndex].id)}
+  cardId={shuffledDeck[currentIndex].id}
+  onDelete={(id) => {
+    const confirmDelete = window.confirm('Delete this flashcard?')
+    if (!confirmDelete) return
+
+    const updated = shuffledDeck.filter((card) => card.id !== id)
+    setShuffledDeck(updated)
+
+    // Also remove from learnedCards if it was marked
+    setLearnedCards((prev) => prev.filter((cardId) => cardId !== id))
+
+    // Reset currentIndex if needed
+    setCurrentIndex((prev) => Math.max(0, Math.min(prev, updated.length - 1)))
+  }}
 />
 
+  <CreateFlashcard
+  onAdd={(newCard) => {
+    setShuffledDeck((prev) => [...prev, newCard])
+    setCurrentIndex(shuffledDeck.length)
+  } }/>
 
       <div className="flex gap-4 mt-4">
         <button
